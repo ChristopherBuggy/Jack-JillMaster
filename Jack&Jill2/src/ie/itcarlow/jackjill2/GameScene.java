@@ -8,6 +8,7 @@ import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.scene.menu.MenuScene.IOnMenuItemClickListener;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
@@ -18,7 +19,10 @@ import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.util.SAXUtils;
 import org.andengine.util.adt.align.HorizontalAlign;
 import org.andengine.util.adt.color.Color;
+import org.andengine.util.level.EntityLoader;
 import org.andengine.util.level.constants.LevelConstants;
+import org.andengine.util.level.simple.SimpleLevelEntityLoaderData;
+import org.andengine.util.level.simple.SimpleLevelLoader;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -38,9 +42,9 @@ public class GameScene extends BaseScene{
 	private static final String TAG_ENTITY_ATTRIBUTE_Y = "y";
 	private static final String TAG_ENTITY_ATTRIBUTE_TYPE = "type";
 	
-	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM1 = "plat1";
-	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM2 = "plat2";
-	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM3 = "plat3";
+	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM1 = "platform1";
+	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM2 = "platform2";
+	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM3 = "platform3";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_COIN = "coin";
 	
 	private void createHUD(){
@@ -74,33 +78,41 @@ public class GameScene extends BaseScene{
 	}
 	
 	
-	/*//Used to Load my levels from XML Files.
+	//Used to Load my levels from XML Files.
 	private void loadLevel(int levelID)
 	{
-		final SimpleLevelLoader levelLoader = new SimpleLevelLoader(vbom);
-		
-		final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(0, 0.01f, 0.5f);
-		
-		levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(LevelConstants.TAG_LEVEL)
-		{
-			public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException
-			{
-				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_WIDTH);
-	            final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_HEIGHT);
+	    final SimpleLevelLoader levelLoader = new SimpleLevelLoader(vbom);
+	    
+	    final FixtureDef FIXTURE_DEF = PhysicsFactory.createFixtureDef(0, 0.01f, 0.5f);
+	    
+	    levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(LevelConstants.TAG_LEVEL)
+	    {
+	        public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException 
+	        {
+	            final int width = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_WIDTH);
+	            final int height = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_HEIGHT);
 	            
 	            // TODO later we will specify camera BOUNDS and create invisible walls
 	            // on the beginning and on the end of the level.
 
 	            return GameScene.this;
+	        }
+
+			@Override
+			public IEntity onLoadEntity(String pEntityName, IEntity pParent, org.xml.sax.Attributes pAttributes,
+					SimpleLevelEntityLoaderData pEntityLoaderData) throws IOException {
+				// TODO Auto-generated method stub
+				return null;
 			}
-		}));
-		levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(TAG_ENTITY)
+	    });
+	    
+	    levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(TAG_ENTITY)
 	    {
 	        public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException
 	        {
-	            final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_X);
-	            final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_Y);
-	            final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_TYPE);
+	            final int x = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, TAG_ENTITY_ATTRIBUTE_X);
+	            final int y = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, TAG_ENTITY_ATTRIBUTE_Y);
+	            final String type = SAXUtils.getAttributeOrThrow((org.xml.sax.Attributes) pAttributes, TAG_ENTITY_ATTRIBUTE_TYPE);
 	            
 	            final Sprite levelObject;
 	            
@@ -137,7 +149,7 @@ public class GameScene extends BaseScene{
 	                         * we will later check if player collide with this (coin)
 	                         * and if it does, we will increase score and hide coin
 	                         * it will be completed in next articles (after creating player code)
-	                         *
+	                         */
 	                    }
 	                };
 	                levelObject.registerEntityModifier(new LoopEntityModifier(new ScaleModifier(1, 1, 1.3f)));
@@ -151,12 +163,18 @@ public class GameScene extends BaseScene{
 
 	            return levelObject;
 	        }
+
+			@Override
+			public IEntity onLoadEntity(String pEntityName, IEntity pParent, org.xml.sax.Attributes pAttributes,
+					SimpleLevelEntityLoaderData pEntityLoaderData) throws IOException {
+				// TODO Auto-generated method stub
+				return null;
+			}
 	    });
 
-	    levelLoader.loadLevelFromAsset(activity.getAssets(), "level/" + levelID + ".lvl");
-	
+	    levelLoader.loadLevelFromAsset(activity.getAssets(), "level/" + levelID + ".xml");
 	}
-	*/
+	
 
 	@Override
 	public void createScene() {
@@ -164,6 +182,7 @@ public class GameScene extends BaseScene{
 		createBackGround();
 		createHUD();
 		createPhysics();
+		loadLevel(1);
 	}
 
 	@Override
