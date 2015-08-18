@@ -1,14 +1,15 @@
 package ie.itcarlow.jackjill2;
 
 import java.io.IOException;
-import java.util.jar.Attributes;
+
 
 import org.andengine.engine.camera.hud.HUD;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
+import org.andengine.entity.scene.IOnSceneTouchListener;
+import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
-import org.andengine.entity.scene.menu.MenuScene.IOnMenuItemClickListener;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
@@ -16,6 +17,7 @@ import org.andengine.extension.physics.box2d.FixedStepPhysicsWorld;
 import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
+import org.andengine.input.touch.TouchEvent;
 import org.andengine.util.SAXUtils;
 import org.andengine.util.adt.align.HorizontalAlign;
 import org.andengine.util.adt.color.Color;
@@ -23,6 +25,7 @@ import org.andengine.util.level.EntityLoader;
 import org.andengine.util.level.constants.LevelConstants;
 import org.andengine.util.level.simple.SimpleLevelEntityLoaderData;
 import org.andengine.util.level.simple.SimpleLevelLoader;
+import org.xml.sax.Attributes;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -31,7 +34,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 import ie.itcarlow.jackjill2.SceneManager.SceneType;
 
-public class GameScene extends BaseScene{
+public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	
 	private HUD gameHUD;
 	private Text scoreText;
@@ -46,6 +49,10 @@ public class GameScene extends BaseScene{
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM2 = "platform2";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM3 = "platform3";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_COIN = "coin";
+	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
+	
+	private Player player;
+	private boolean firstTouch = false;
 	
 	private void createHUD(){
 		gameHUD = new HUD();
@@ -87,32 +94,25 @@ public class GameScene extends BaseScene{
 	    
 	    levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(LevelConstants.TAG_LEVEL)
 	    {
-	        public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException 
+	    	public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException 
 	        {
-	            final int width = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_WIDTH);
-	            final int height = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_HEIGHT);
+	            final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_WIDTH);
+	            final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_HEIGHT);
 	            
 	            // TODO later we will specify camera BOUNDS and create invisible walls
 	            // on the beginning and on the end of the level.
 
 	            return GameScene.this;
 	        }
-
-			@Override
-			public IEntity onLoadEntity(String pEntityName, IEntity pParent, org.xml.sax.Attributes pAttributes,
-					SimpleLevelEntityLoaderData pEntityLoaderData) throws IOException {
-				// TODO Auto-generated method stub
-				return null;
-			}
 	    });
 	    
 	    levelLoader.registerEntityLoader(new EntityLoader<SimpleLevelEntityLoaderData>(TAG_ENTITY)
 	    {
-	        public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException
+	    	public IEntity onLoadEntity(final String pEntityName, final IEntity pParent, final Attributes pAttributes, final SimpleLevelEntityLoaderData pSimpleLevelEntityLoaderData) throws IOException
 	        {
-	            final int x = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, TAG_ENTITY_ATTRIBUTE_X);
-	            final int y = SAXUtils.getIntAttributeOrThrow((org.xml.sax.Attributes) pAttributes, TAG_ENTITY_ATTRIBUTE_Y);
-	            final String type = SAXUtils.getAttributeOrThrow((org.xml.sax.Attributes) pAttributes, TAG_ENTITY_ATTRIBUTE_TYPE);
+	            final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_X);
+	            final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_Y);
+	            final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_TYPE);
 	            
 	            final Sprite levelObject;
 	            
@@ -153,7 +153,19 @@ public class GameScene extends BaseScene{
 	                    }
 	                };
 	                levelObject.registerEntityModifier(new LoopEntityModifier(new ScaleModifier(1, 1, 1.3f)));
-	            }            
+	            }  
+	            else if (type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER))
+	            {
+	            	player = new Player(x, y, vbom, camera, physicsWorld)
+	            	{
+	            		@Override
+	            		public void onDie()
+	            		{
+	            			// TODO Latter we will handle it
+	            		}
+	            	};
+	            	levelObject = player;
+	            }
 	            else
 	            {
 	                throw new IllegalArgumentException();
@@ -163,13 +175,6 @@ public class GameScene extends BaseScene{
 
 	            return levelObject;
 	        }
-
-			@Override
-			public IEntity onLoadEntity(String pEntityName, IEntity pParent, org.xml.sax.Attributes pAttributes,
-					SimpleLevelEntityLoaderData pEntityLoaderData) throws IOException {
-				// TODO Auto-generated method stub
-				return null;
-			}
 	    });
 
 	    levelLoader.loadLevelFromAsset(activity.getAssets(), "level/" + levelID + ".xml");
@@ -183,6 +188,7 @@ public class GameScene extends BaseScene{
 		createHUD();
 		createPhysics();
 		loadLevel(1);
+		setOnSceneTouchListener(this);
 	}
 
 	@Override
@@ -202,9 +208,28 @@ public class GameScene extends BaseScene{
 		// TODO Auto-generated method stub
 		camera.setHUD(null);
 		camera.setCenter(400,  240);
-		
+		camera.setChaseEntity(null);
 		//TODO code responsible for disposing scene
 		//removing all the game scene onjects
+	}
+
+
+	@Override
+	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+		// TODO Auto-generated method stub
+		if (pSceneTouchEvent.isActionDown())
+		{
+			if (!firstTouch)
+			{
+				player.setRunning();
+				firstTouch = true;
+			}
+			else
+			{
+				player.jump();
+			}
+		}
+		return false;
 	}
 	
 	
