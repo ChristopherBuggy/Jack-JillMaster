@@ -70,13 +70,27 @@ public abstract class Player extends AnimatedSprite{
 	{
 		canRun = true;
 		
-		final long[] PLAYER_ANIMATE= new long[] {100, 100, 100, 100, 0 };
+		final long[] PLAYER_ANIMATE= new long[] {100, 100, 100, 100, 10 };
 		
 		animate(PLAYER_ANIMATE, 0, 4, true);	
 	}
 	
 	public void jump()
 	{
-		body.setLinearVelocity(new Vector2(body.getLinearVelocity().x, 12));
+		if (footContacts < 1)
+		{
+			return;
+		}
+		body.setLinearVelocity(new Vector2(body.getLinearVelocity().x, 100));
+	}
+	
+	public void increaseFootContacts()
+	{
+		footContacts++;
+	}
+	
+	public void decreaseFootContacts()
+	{
+		footContacts--;
 	}
 }
