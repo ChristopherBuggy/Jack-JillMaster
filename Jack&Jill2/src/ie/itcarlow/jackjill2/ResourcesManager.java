@@ -55,6 +55,10 @@ public class ResourcesManager {
     
     public ITiledTextureRegion player_region;
     
+    //Level Complete stuff! 
+    public ITextureRegion complete_window_region;
+    public ITiledTextureRegion complete_stars_region;
+    
     private BuildableBitmapTextureAtlas menuTextureAtlas;
     
     //---------------------------------------------
@@ -84,8 +88,8 @@ public class ResourcesManager {
     	BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/menu/");
     	menuTextureAtlas = new BuildableBitmapTextureAtlas(activity.getTextureManager(), 1024, 1024, TextureOptions.BILINEAR);
     	menu_background_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "menu_background.png");
-    	play_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "play.png");
-    	options_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "options.png");
+    	play_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "lvl1.png");
+    	options_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(menuTextureAtlas, activity, "lvl2.png");
     	       
     	try 
     	{
@@ -114,6 +118,9 @@ public class ResourcesManager {
         coin_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "coin.png");
        
         player_region = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "player.png", 5, 1);
+        
+        complete_window_region = BitmapTextureAtlasTextureRegionFactory.createFromAsset(gameTextureAtlas, activity, "levelCompleteWindow.png");
+        complete_stars_region = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(gameTextureAtlas, activity, "star.png", 2, 1);
         
         try 
         {

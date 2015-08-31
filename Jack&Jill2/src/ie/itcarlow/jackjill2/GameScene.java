@@ -4,6 +4,8 @@ import java.io.IOException;
 
 
 import org.andengine.engine.camera.hud.HUD;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
@@ -37,6 +39,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
 
+import ie.itcarlow.jackjill2.LevelCompleteWindow.StarsCount;
 import ie.itcarlow.jackjill2.SceneManager.SceneType;
 
 public class GameScene extends BaseScene implements IOnSceneTouchListener {
@@ -58,9 +61,13 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLATFORM3 = "platform3";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_COIN = "coin";
 	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
+	private static final Object TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_LEVEL_COMPLETE = "levelComplete";
 	
 	private Player player;
 	private boolean firstTouch = false;
+	
+	//Level Complete stuff! 
+	private LevelCompleteWindow levelCompleteWindow;
 	
 	private void createHUD()
 	{
@@ -192,6 +199,43 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	            	};
 	            	levelObject = player;
 	            }
+	            else if (type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_LEVEL_COMPLETE))
+	            {
+	                levelObject = new Sprite(x, y, resourcesManager.complete_stars_region, vbom)
+	                {
+	                    @Override
+	                    protected void onManagedUpdate(float pSecondsElapsed) 
+	                    {
+	                        super.onManagedUpdate(pSecondsElapsed);
+
+	                        if (player.collidesWith(this))
+	                        {
+	                        	if (score == 0){
+	                        		levelCompleteWindow.display(StarsCount.ONE, GameScene.this, camera);
+		                            this.setVisible(false);
+		                            this.setIgnoreUpdate(true);
+	                        	}
+	                        	else if (score == 10){
+	                        		levelCompleteWindow.display(StarsCount.TWO, GameScene.this, camera);
+		                            this.setVisible(false);
+		                            this.setIgnoreUpdate(true);
+	                        	}
+	                        	else if (score == 30){
+	                        		levelCompleteWindow.display(StarsCount.THREE, GameScene.this, camera);
+		                            this.setVisible(false);
+		                            this.setIgnoreUpdate(true);
+	                        	}
+	                        	else {
+	                        		levelCompleteWindow.display(StarsCount.FOUR, GameScene.this, camera);
+		                            this.setVisible(false);
+		                            this.setIgnoreUpdate(true);
+	                        	}
+	                            
+	                        }
+	                    }
+	                };
+	                levelObject.registerEntityModifier(new LoopEntityModifier(new ScaleModifier(1, 1, 1.3f)));
+	            }
 	            else
 	            {
 	                throw new IllegalArgumentException();
@@ -204,6 +248,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 	    });
 
 	    levelLoader.loadLevelFromAsset(activity.getAssets(), "level/" + levelID + ".xml");
+	    
 	}
 	
 
@@ -213,9 +258,10 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 		createBackGround();
 		createHUD();
 		createPhysics();
-		loadLevel(1);
+		loadLevel(MainMenuScene.level);
 		createGameOverText();
 		setOnSceneTouchListener(this);
+		levelCompleteWindow = new LevelCompleteWindow(vbom);
 	}
 
 	@Override
@@ -252,18 +298,18 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 				firstTouch = true;
 			}
 			else
-			{
+			{				
 				player.jump();
 			}
 		}
 		return false;
 	}
 	
+	//Internal Class
 	private ContactListener contactListener()
 	{
 		ContactListener contactListener = new ContactListener()
-		{
-			
+		{	
 			@Override
 			public void beginContact(Contact contact) 
 			{
@@ -277,6 +323,27 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 						player.increaseFootContacts();
 					}
 				}
+				
+				if (x1.getBody().getUserData().equals("platform2") && x2.getBody().getUserData().equals("player"))
+				{
+				    engine.registerUpdateHandler(new TimerHandler(0.2f, new ITimerCallback()
+				    {
+				    	public void onTimePassed(final TimerHandler pTimerHandler)
+				    	{
+				    		pTimerHandler.reset();
+				    		engine.unregisterUpdateHandler(pTimerHandler);;
+				    		x1 .getBody().setType(BodyType.DynamicBody);
+				    	}   	
+				    }));
+				    
+				}
+				
+				if (x1.getBody().getUserData().equals("platform3") && x2.getBody().getUserData().equals("player"))
+				{
+					x1.getBody().setType(BodyType.DynamicBody);
+				}
+				
+				
 			}
 			@Override
 			public void endContact(Contact contact) 
@@ -305,7 +372,7 @@ public class GameScene extends BaseScene implements IOnSceneTouchListener {
 			}
 			
 		};
-		return null;	
+		return contactListener;	
 	}
 	
 	

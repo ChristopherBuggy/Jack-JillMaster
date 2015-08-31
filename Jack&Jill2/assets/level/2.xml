@@ -4,14 +4,14 @@
     <entity x="200" y="200" type="platform1"/>
     <entity x="375" y="200" type="platform1"/>
     
-    <entity x="660" y="200" type="platform1"/>
-    <entity x="880" y="240" type="platform1"/>
-    <entity x="1100" y="330" type="platform1"/>
-    <entity x="1300" y="300" type="platform1"/>
+    <entity x="660" y="200" type="platform2"/>
+    <entity x="880" y="240" type="platform2"/>
+    <entity x="1100" y="330" type="platform3"/>
+    <entity x="1300" y="300" type="platform2"/>
     <entity x="1500" y="500" type="platform1"/>
-    <entity x="1800" y="450" type="platform1"/>
+    <entity x="1800" y="450" type="platform3"/>
     <entity x="2050" y="500" type="platform1"/>
-    <entity x="2250" y="550" type="platform1"/>
+    <entity x="2250" y="550" type="platform2"/>
     
     <entity x="1500" y="100" type="platform1"/>
     <entity x="1800" y="50" type="platform1"/>
