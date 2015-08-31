@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html lang="en"> 
+<meta charset="utf-8"> 
+	<head>
+	<title> Thing Thing </title>
+	<style type="text/css"> 
+		body { 
+			background-image: url("background.jpg");
+    		background-color: #cccccc;
+			margin:0px; 
+			overflow : hidden; 
+		}
+		</style> 
+	</head>
+<script>
+var url = "ws://149.153.102.8:8080/test";
+var ws = new WebSocket(url);
+var player={};
+//player.Pos={"X" : 100, "Y" : 100};
+player.request = 'join'
+
+var otherPlayer = {};
+//otherPlayer.Pos={"X" : 400, "Y" : 100};
+otherPlayer.request = 'join'
+var state;
+var game;
+state = "";
+ws.onopen = function()
+{
+	var message = JSON.stringify(player);
+	ws.send(message);
+}
+
+
+ws.onmessage = function(event)
+{
+	this.msg = JSON.parse(event.data);
+	if(this.msg["type"] == "join" && state != "Game starting now")
+	{
+		state = this.msg["data"];
+		console.log("JOIN");
+		alert(event.data);
+	}
+	if(this.msg["type"] == "game start")
+	{
+		state = this.msg["data"];
+		console.log(state);
+	}
+
+}
+</script>
+	<body onload=main()>
+		
+	<script src="Player.js"></script>
+	<script src="Bullet.js"></script>
+	<script src="Platform.js"></script>
+	<script src="Block.js"></script>
+	<script src="Enemy.js"></script>
+	<script src="Game.js"></script>
+
+	<div id='controller'>
+	<img draggable = "false" id = "rightC" src = "right.png">
+	<img draggable = "false" id = "leftC" src = "left.png">
+	<img draggable = "false" id = "upC" src = "up.png">
+	<img draggable = "false" id = "downC" src = "down.png">
+	<img draggable = "false" id = "Abutton" src = "A.png">
+	<img draggable = "false" id = "Bbutton" src = "B.png">
+	</div>	
+	</body>
+</html>
+	
